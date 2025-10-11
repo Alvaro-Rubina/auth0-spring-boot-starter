@@ -17,12 +17,12 @@ public class Role extends Auditable{
     private Long id;
 
     @Column(name = "auth0_role_id", unique = true, nullable = false)
-    private String auth0RoleId;
+    private String auth0Id;
 
-    @Column(name = "name", unique = true, nullable = false)
+    @Column(name = "name", length = 50, unique = true, nullable = false)
     private String name;
 
-    @Column(name = "description", length = 500)
+    @Column(name = "description", length = 500, nullable = false)
     private String description;
 
     @Column(name = "active", nullable = false)
