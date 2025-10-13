@@ -25,6 +25,13 @@ public class Auth0UserService {
 
     private final ManagementAPI managementAPI;
 
+    /**
+     * Registra un nuevo usuario en Auth0 a partir de un DTO de registro.
+     *
+     * @param dto DTO con los datos del usuario a registrar.
+     * @return SignupResponse con los datos del usuario creado en Auth0.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public SignupResponse registerUserFromDTO(SignupRequest dto) throws Auth0Exception {
         User user = new User();
 
@@ -50,6 +57,13 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Activa o desactiva un usuario en Auth0 según el parámetro proporcionado.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @param active true para activar, false para desactivar (bloquear).
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void toggleUserActiveStatus(String auth0Id, boolean active) throws Auth0Exception {
         try {
             User userUpdate = new User();
@@ -66,6 +80,13 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Asigna un rol a un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @param auth0RoleId ID del rol en Auth0.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void setUserRole(String auth0Id, String auth0RoleId) throws Auth0Exception {
         try {
             log.info("Asignando rol con id en Auth0 '{}' al usuario con id en Auth0 '{}'", auth0RoleId, auth0Id);
@@ -78,6 +99,13 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Establece el nombre de un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @param name Nuevo nombre para el usuario.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void setUserName(String auth0Id, String name) throws Auth0Exception {
         try {
             User userUpdate = new User();
@@ -91,6 +119,13 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Establece la contraseña de un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @param password Nueva contraseña para el usuario.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void setUserPassword(String auth0Id, String password) throws Auth0Exception {
         try {
             User userUpdate = new User();
@@ -105,6 +140,13 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Establece la foto de perfil de un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @param pictureUrl URL de la nueva foto de perfil.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void setUserPicture(String auth0Id, String pictureUrl) throws Auth0Exception {
         try {
             User userUpdate = new User();
@@ -118,6 +160,12 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Obtiene el rol principal asignado a un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @return RoleResponse con los datos del rol, o null si no tiene roles.
+     */
     public RoleResponse getUserRole(String auth0Id) {
         try {
             log.info("Obteniendo roles del usuario con id en Auth0 '{}'", auth0Id);
@@ -141,6 +189,12 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Obtiene la URL de la foto de perfil de un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @return URL de la foto de perfil, o null si no está disponible.
+     */
     public String getUserPicture(String auth0Id) {
         try {
             log.info("Obteniendo foto de perfil del usuario con id en Auth0 '{}'", auth0Id);
@@ -153,6 +207,12 @@ public class Auth0UserService {
         }
     }
 
+    /**
+     * Elimina un usuario de Auth0 por su ID.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void deleteUser(String auth0Id) throws Auth0Exception {
         try {
             log.info("Eliminando usuario con id en Auth0 '{}'", auth0Id);

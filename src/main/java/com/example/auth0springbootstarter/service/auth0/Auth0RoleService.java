@@ -18,6 +18,15 @@ public class Auth0RoleService {
 
     private final ManagementAPI managementAPI;
 
+    /**
+     * Crea un nuevo rol en Auth0 si no existe previamente.
+     * Si el rol ya existe, lo retorna sin crear uno nuevo.
+     *
+     * @param name Nombre del rol a crear.
+     * @param description Descripción del rol.
+     * @return El rol creado o el existente si ya estaba en Auth0.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public Role createRol(String name, String description) throws Auth0Exception {
         Role existing = getRoleByName(name);
         if (existing != null) {
@@ -34,6 +43,14 @@ public class Auth0RoleService {
         return createdRole;
     }
 
+    /**
+     * Actualiza el nombre y la descripción de un rol existente en Auth0.
+     *
+     * @param auth0Id ID del rol en Auth0.
+     * @param name Nuevo nombre del rol.
+     * @param description Nueva descripción del rol.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public void updateRol(String auth0Id, String name, String description) throws Auth0Exception {
         Role update = new Role();
         update.setName(name);
@@ -43,6 +60,13 @@ public class Auth0RoleService {
         log.info("Rol '{}' actualizado exitosamente en Auth0.", auth0Id);
     }
 
+    /**
+     * Busca y retorna un rol de Auth0 por su nombre.
+     *
+     * @param name Nombre del rol a buscar.
+     * @return El rol encontrado, o null si no existe.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
     public Role getRoleByName(String name) throws Auth0Exception {
         Request<RolesPage> request = managementAPI.roles().list(null);
         List<Role> roles = request.execute().getItems();
@@ -59,6 +83,17 @@ public class Auth0RoleService {
         }
 
         return foundRole;
+    }
+
+    /**
+     * Verifica si existe un rol en Auth0 con el nombre especificado.
+     *
+     * @param name Nombre del rol a verificar.
+     * @return true si el rol existe, false en caso contrario.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
+    public boolean existsRoleByName(String name) throws Auth0Exception {
+        return getRoleByName(name) != null;
     }
 
 }
