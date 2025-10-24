@@ -38,6 +38,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    /*Spring Retry y Spring Aspects*/
+    implementation("org.springframework.retry:spring-retry:2.0.12")
+    implementation("org.springframework:spring-aspects:6.2.10")
+
     /*Lombok*/
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
