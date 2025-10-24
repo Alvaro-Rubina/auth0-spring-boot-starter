@@ -12,6 +12,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByAuth0Id(String auth0Id);
     boolean existsByEmail(String email);
     List<User> findByRole(Role role);
-    List<User> findByScheduledDeletionAtBeforeAndDeletionRequestedAtIsNotNull(LocalDateTime dateTime);
-
 }
