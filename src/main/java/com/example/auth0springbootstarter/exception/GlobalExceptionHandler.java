@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Auth0Exception.class)
     public ResponseEntity<ErrorResponse> handleAuth0Exception(Auth0Exception ex) {
-        return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+        return buildErrorResponse(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -11,6 +11,8 @@ import com.example.auth0springbootstarter.persistence.dto.user.signup.SignupRequ
 import com.example.auth0springbootstarter.persistence.dto.user.signup.SignupResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -56,26 +58,49 @@ public class Auth0UserService {
     }
 
     /**
-     * Activa o desactiva un usuario en Auth0 según el parámetro proporcionado.
+     * Activa un usuario en Auth0.
      *
      * @param auth0Id ID del usuario en Auth0.
-     * @param active true para activar, false para desactivar (bloquear).
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
-    public void toggleUserActiveStatus(String auth0Id, boolean active) throws Auth0Exception {
-        try {
-            User userUpdate = new User();
-            userUpdate.setBlocked(!active);
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void activateUser(String auth0Id) throws Auth0Exception {
+        log.info("Activando usuario con id '{}' en Auth0", auth0Id);
 
-            log.info("Actualizando estado activo del usuario con id en Auth0 '{}'", auth0Id);
-            managementAPI.users().update(auth0Id, userUpdate).execute();
-            log.info("Usuario con id en Auth0 '{}' actualizado exitosamente", auth0Id);
+        User userUpdate = new User();
+        userUpdate.setBlocked(false);
 
-        } catch (Auth0Exception e) {
-            log.error("Error actualizando estado activo del usuario con id en Auth0 '{}'", auth0Id, e);
-            throw e;
-        }
+        managementAPI.users().update(auth0Id, userUpdate).execute();
+
+        log.info("Usuario con id '{}' en Auth0 activado exitosamente", auth0Id);
     }
+
+    /**
+     * Desactiva (bloquea) un usuario en Auth0.
+     *
+     * @param auth0Id ID del usuario en Auth0.
+     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
+     */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public void deactivateUser(String auth0Id) throws Auth0Exception {
+        log.info("Desactivando usuario con id '{}' en Auth0", auth0Id);
+
+        User userUpdate = new User();
+        userUpdate.setBlocked(true);
+
+        managementAPI.users().update(auth0Id, userUpdate).execute();
+
+        log.info("Usuario con id '{}' en Auth0 desactivado exitosamente", auth0Id);
+    }
+
 
     /**
      * Asigna un rol a un usuario en Auth0.
