@@ -257,7 +257,8 @@ public class UserService {
     @Transactional
     public void executeScheduledDeletions() {
         LocalDateTime now = LocalDateTime.now();
-        List<User> usersToDelete = userRepository.findByScheduledDeletionAtBefore(now);
+        // Solo usuarios que realmente solicitaron eliminación y cuya fecha ya venció
+        List<User> usersToDelete = userRepository.findByScheduledDeletionAtBeforeAndDeletionRequestedAtIsNotNull(now);
 
         log.info("Encontrados {} usuarios para eliminación programada", usersToDelete.size());
 
@@ -276,6 +277,12 @@ public class UserService {
     protected void deleteSingleUser(User user) throws Auth0Exception {
         log.info("Ejecutando eliminación programada del usuario '{}' (ID: {})",
                 user.getEmail(), user.getId());
+
+        // Revalidar que la eliminación sigue autorizada (el usuario podría haberla cancelado)
+        if (user.getScheduledDeletionAt() == null || user.getDeletionRequestedAt() == null) {
+            log.warn("Eliminación omitida para usuario '{}' porque ya no tiene solicitud/fecha programada", user.getEmail());
+            return;
+        }
 
         auth0UserService.deleteUser(user.getAuth0Id());
 
