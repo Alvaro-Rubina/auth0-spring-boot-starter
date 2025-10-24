@@ -2,9 +2,9 @@ package com.example.auth0springbootstarter.service.auth0;
 
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.Role;
-import com.auth0.json.mgmt.RolesPage;
-import com.auth0.net.Request;
+import com.auth0.json.mgmt.roles.Role;
+import com.auth0.json.mgmt.roles.RolesPage;
+import com.auth0.net.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,8 @@ public class Auth0RoleService {
         rolAuth0.setName(name);
         rolAuth0.setDescription(description);
 
-        Role createdRole = managementAPI.roles().create(rolAuth0).execute();
+        Response<Role> response = managementAPI.roles().create(rolAuth0).execute();
+        Role createdRole = response.getBody();
         log.info("Rol '{}' creado exitosamente en Auth0 con ID '{}'.", name, createdRole.getId());
         return createdRole;
     }
@@ -68,8 +69,8 @@ public class Auth0RoleService {
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
     public Role getRoleByName(String name) throws Auth0Exception {
-        Request<RolesPage> request = managementAPI.roles().list(null);
-        List<Role> roles = request.execute().getItems();
+        Response<RolesPage> response = managementAPI.roles().list(null).execute();
+        List<Role> roles = response.getBody().getItems();
 
         Role foundRole = roles.stream()
                 .filter(r -> r.getName().equalsIgnoreCase(name))
@@ -95,5 +96,4 @@ public class Auth0RoleService {
     public boolean existsRoleByName(String name) throws Auth0Exception {
         return getRoleByName(name) != null;
     }
-
 }

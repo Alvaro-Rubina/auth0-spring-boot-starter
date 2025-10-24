@@ -2,9 +2,10 @@ package com.example.auth0springbootstarter.service.auth0;
 
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.Role;
+import com.auth0.json.mgmt.roles.Role;
+import com.auth0.json.mgmt.roles.RolesPage;
 import com.auth0.json.mgmt.users.User;
-import com.auth0.net.Request;
+import com.auth0.net.Response;
 import com.example.auth0springbootstarter.persistence.dto.role.RoleResponse;
 import com.example.auth0springbootstarter.persistence.dto.user.signup.SignupRequest;
 import com.example.auth0springbootstarter.persistence.dto.user.signup.SignupResponse;
@@ -20,9 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Auth0UserService {
 
-    /*@Value("${auth0.connection}")
-    private String connection; *//*Username-Password-Authentication*/
-
     private final ManagementAPI managementAPI;
 
     /**
@@ -34,7 +32,6 @@ public class Auth0UserService {
      */
     public SignupResponse registerUserFromDTO(SignupRequest dto) throws Auth0Exception {
         User user = new User();
-
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword().toCharArray());
         user.setName((dto.getName() != null && !dto.getName().isBlank())
@@ -43,7 +40,8 @@ public class Auth0UserService {
 
         try {
             log.info("Creando usuario '{}' en Auth0 vía Management API", dto.getEmail());
-            User createdUser = managementAPI.users().create(user).execute();
+            Response<User> response = managementAPI.users().create(user).execute();
+            User createdUser = response.getBody();
 
             return SignupResponse.builder()
                     .auth0Id(createdUser.getId())
@@ -67,11 +65,10 @@ public class Auth0UserService {
     public void toggleUserActiveStatus(String auth0Id, boolean active) throws Auth0Exception {
         try {
             User userUpdate = new User();
-            userUpdate.setBlocked(!active); // blocked = true -> desactivado
+            userUpdate.setBlocked(!active);
 
             log.info("Actualizando estado activo del usuario con id en Auth0 '{}'", auth0Id);
-            Request<User> request = managementAPI.users().update(auth0Id, userUpdate);
-            request.execute();
+            managementAPI.users().update(auth0Id, userUpdate).execute();
             log.info("Usuario con id en Auth0 '{}' actualizado exitosamente", auth0Id);
 
         } catch (Auth0Exception e) {
@@ -170,12 +167,15 @@ public class Auth0UserService {
         try {
             log.info("Obteniendo roles del usuario con id en Auth0 '{}'", auth0Id);
 
-            List<Role> roles = managementAPI.users().listRoles(auth0Id, null).execute().getItems();
+            Response<RolesPage> response = managementAPI.users().listRoles(auth0Id, null).execute();
+            List<Role> roles = response.getBody().getItems();
+
             if (roles != null && !roles.isEmpty()) {
-                Role rol = roles.getFirst();
+                Role role = roles.get(0);
+                log.info("El Usuario con id en Auth0 '{}' tiene el siguiente rol asignado: '{}'", auth0Id, role.getName());
                 return RoleResponse.builder()
-                        .name(rol.getName())
-                        .description(rol.getDescription())
+                        .name(role.getName())
+                        .description(role.getDescription())
                         .build();
 
             } else {
@@ -198,7 +198,8 @@ public class Auth0UserService {
     public String getUserPicture(String auth0Id) {
         try {
             log.info("Obteniendo foto de perfil del usuario con id en Auth0 '{}'", auth0Id);
-            User user = managementAPI.users().get(auth0Id, null).execute();
+            Response<User> response = managementAPI.users().get(auth0Id, null).execute();
+            User user = response.getBody();
             return user.getPicture();
 
         } catch (Auth0Exception e) {
@@ -224,5 +225,4 @@ public class Auth0UserService {
             throw e;
         }
     }
-
 }
