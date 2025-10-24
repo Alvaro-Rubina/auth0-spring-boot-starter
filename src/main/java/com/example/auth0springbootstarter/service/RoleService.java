@@ -126,7 +126,7 @@ public class RoleService {
                 return roleMapper.toResponse(existingRole);
             } else {
                 log.warn("El rol '{}' existe en la base de datos pero no en Auth0. Creando en Auth0.", name);
-                com.auth0.json.mgmt.Role auth0Role = auth0RoleService.createRol(name, description);
+                com.auth0.json.mgmt.roles.Role auth0Role = auth0RoleService.createRol(name, description);
 
                 existingRole.setAuth0Id(auth0Role.getId());
                 existingRole.setDescription(auth0Role.getDescription());
@@ -137,7 +137,7 @@ public class RoleService {
         }
 
         log.info("El rol '{}' no existe en la base de datos. Creando en Auth0 y guardando en la base de datos.", name);
-        com.auth0.json.mgmt.Role auth0Role = auth0RoleService.createRol(name, description);
+        com.auth0.json.mgmt.roles.Role auth0Role = auth0RoleService.createRol(name, description);
 
         Role role = Role.builder()
                 .name(auth0Role.getName())
