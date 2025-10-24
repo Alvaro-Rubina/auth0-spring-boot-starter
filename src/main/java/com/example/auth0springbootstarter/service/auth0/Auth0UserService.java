@@ -32,6 +32,11 @@ public class Auth0UserService {
      * @return SignupResponse con los datos del usuario creado en Auth0.
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public SignupResponse registerUserFromDTO(SignupRequest dto) throws Auth0Exception {
         User user = new User();
         user.setEmail(dto.getEmail());
@@ -40,21 +45,15 @@ public class Auth0UserService {
                 ? dto.getName()
                 : dto.getEmail());
 
-        try {
-            log.info("Creando usuario '{}' en Auth0 vía Management API", dto.getEmail());
-            Response<User> response = managementAPI.users().create(user).execute();
-            User createdUser = response.getBody();
+        log.info("Creando usuario '{}' en Auth0 vía Management API", dto.getEmail());
+        Response<User> response = managementAPI.users().create(user).execute();
+        User createdUser = response.getBody();
 
-            return SignupResponse.builder()
-                    .auth0Id(createdUser.getId())
-                    .email(createdUser.getEmail())
-                    .name(createdUser.getName())
-                    .build();
-
-        } catch (Auth0Exception e) {
-            log.error("Error creando usuario '{}' en Auth0", dto.getEmail(), e);
-            throw e;
-        }
+        return SignupResponse.builder()
+                .auth0Id(createdUser.getId())
+                .email(createdUser.getEmail())
+                .name(createdUser.getName())
+                .build();
     }
 
     /**
@@ -109,16 +108,15 @@ public class Auth0UserService {
      * @param auth0RoleId ID del rol en Auth0.
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public void setUserRole(String auth0Id, String auth0RoleId) throws Auth0Exception {
-        try {
-            log.info("Asignando rol con id en Auth0 '{}' al usuario con id en Auth0 '{}'", auth0RoleId, auth0Id);
-            managementAPI.users().addRoles(auth0Id, Collections.singletonList(auth0RoleId)).execute();
-            log.info("Rol asignado exitosamente al usuario con id en Auth0 '{}'", auth0Id);
-
-        } catch (Auth0Exception e) {
-            log.error("Error asignando rol al usuario con id en Auth0 '{}'", auth0Id, e);
-            throw e;
-        }
+        log.info("Asignando rol con id en Auth0 '{}' al usuario con id en Auth0 '{}'", auth0RoleId, auth0Id);
+        managementAPI.users().addRoles(auth0Id, Collections.singletonList(auth0RoleId)).execute();
+        log.info("Rol asignado exitosamente al usuario con id en Auth0 '{}'", auth0Id);
     }
 
     /**
@@ -128,19 +126,18 @@ public class Auth0UserService {
      * @param name Nuevo nombre para el usuario.
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public void setUserName(String auth0Id, String name) throws Auth0Exception {
-        try {
-            User userUpdate = new User();
-            userUpdate.setName(name);
-            log.info("Estableciendo nombre del usuario con id en Auth0 '{}'", auth0Id);
-            managementAPI.users().update(auth0Id, userUpdate).execute();
-
-        } catch (Auth0Exception e) {
-            log.error("Error estableciendo el nombre del usuario con id en Auth0 '{}'", auth0Id);
-            throw e;
-        }
+        log.info("Estableciendo nombre del usuario con id en Auth0 '{}'", auth0Id);
+        User userUpdate = new User();
+        userUpdate.setName(name);
+        managementAPI.users().update(auth0Id, userUpdate).execute();
+        log.info("Nombre establecido exitosamente para el usuario con id en Auth0 '{}'", auth0Id);
     }
-
     /**
      * Establece la contraseña de un usuario en Auth0.
      *
@@ -148,38 +145,17 @@ public class Auth0UserService {
      * @param password Nueva contraseña para el usuario.
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public void setUserPassword(String auth0Id, String password) throws Auth0Exception {
-        try {
-            User userUpdate = new User();
-            userUpdate.setPassword(password.toCharArray());
-            log.info("Estableciendo contraseña del usuario con id en Auth0 '{}'", auth0Id);
-            managementAPI.users().update(auth0Id, userUpdate).execute();
-            log.info("Contraseña establecida exitosamente para el usuario con id en Auth0 '{}'", auth0Id);
-
-        } catch (Auth0Exception e) {
-            log.error("Error estableciendo la contraseña del usuario con id en Auth0 '{}'", auth0Id, e);
-            throw e;
-        }
-    }
-
-    /**
-     * Establece la foto de perfil de un usuario en Auth0.
-     *
-     * @param auth0Id ID del usuario en Auth0.
-     * @param pictureUrl URL de la nueva foto de perfil.
-     * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
-     */
-    public void setUserPicture(String auth0Id, String pictureUrl) throws Auth0Exception {
-        try {
-            User userUpdate = new User();
-            userUpdate.setPicture(pictureUrl);
-            log.info("Estableciendo foto de perfil al usuario con id en Auth0 '{}'", auth0Id);
-            managementAPI.users().update(auth0Id, userUpdate).execute();
-
-        } catch (Auth0Exception e) {
-            log.error("Error estableciendo la foto de perfil del usuario con id en Auth0 '{}'", auth0Id, e);
-            throw e;
-        }
+        log.info("Estableciendo contraseña del usuario con id en Auth0 '{}'", auth0Id);
+        User userUpdate = new User();
+        userUpdate.setPassword(password.toCharArray());
+        managementAPI.users().update(auth0Id, userUpdate).execute();
+        log.info("Contraseña establecida exitosamente para el usuario con id en Auth0 '{}'", auth0Id);
     }
 
     /**
@@ -239,15 +215,14 @@ public class Auth0UserService {
      * @param auth0Id ID del usuario en Auth0.
      * @throws Auth0Exception Si ocurre un error al comunicarse con Auth0.
      */
+    @Retryable(
+            value = Auth0Exception.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public void deleteUser(String auth0Id) throws Auth0Exception {
-        try {
-            log.info("Eliminando usuario con id en Auth0 '{}'", auth0Id);
-            managementAPI.users().delete(auth0Id).execute();
-            log.info("Usuario con id en Auth0 '{}' eliminado exitosamente", auth0Id);
-
-        } catch (Auth0Exception e) {
-            log.error("Error eliminando usuario con id en Auth0 '{}'", auth0Id, e);
-            throw e;
-        }
+        log.info("Eliminando usuario con id en Auth0 '{}'", auth0Id);
+        managementAPI.users().delete(auth0Id).execute();
+        log.info("Usuario con id en Auth0 '{}' eliminado exitosamente", auth0Id);
     }
 }
