@@ -20,6 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static com.example.auth0springbootstarter.utils.Constants.ADMIN_ROLE_NAME;
+import static com.example.auth0springbootstarter.utils.Constants.OWNER_ROLE_NAME;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -45,7 +47,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // TODO: Protección de endpoints
+                        .requestMatchers("/*/public/**", "/public/**").permitAll()
+                        .requestMatchers("/*/owner/**", "/owner/**").hasRole(OWNER_ROLE_NAME)
+                        .requestMatchers("/*/admin/**", "/admin/**").hasRole(ADMIN_ROLE_NAME)
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2resourceServer -> oauth2resourceServer
