@@ -18,5 +18,8 @@ public class SignupRequest {
     @NotBlank(message = "El campo password es obligatorio")
     private String password;
 
+    @NotBlank(message = "El campo name es obligatorio")
     private String name;
+
+    private String roleName;
 }

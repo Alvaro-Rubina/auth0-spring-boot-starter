@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.example.auth0springbootstarter.utils.Constants.ADMIN_ROL_NAME;
-import static com.example.auth0springbootstarter.utils.Constants.USER_ROL_NAME;
+import static com.example.auth0springbootstarter.utils.Constants.ADMIN_ROLE_NAME;
+import static com.example.auth0springbootstarter.utils.Constants.USER_ROLe_NAME;
 
 @Slf4j
 @Service
@@ -63,7 +63,7 @@ public class RoleService {
 
         if (nameChanged) {
 
-            if ((role.getName().equals(USER_ROL_NAME)) || (role.getName().equals(ADMIN_ROL_NAME))) {
+            if ((role.getName().equals(USER_ROLe_NAME)) || (role.getName().equals(ADMIN_ROLE_NAME))) {
                 throw new ForbiddenOperationException("No es posible editar el nombre del rol '" + role.getName() + "' porque es un rol por defecto");
             }
 

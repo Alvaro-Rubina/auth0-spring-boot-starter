@@ -18,13 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.example.auth0springbootstarter.utils.Constants.USER_ROL_NAME;
+import static com.example.auth0springbootstarter.utils.Constants.USER_ROLE_NAME;
 
 @Slf4j
 @Service
@@ -36,10 +34,18 @@ public class UserService {
     private final Auth0UserService auth0UserService;
     private final RoleService roleService;
 
-    // TODO: Mejorar metodos register
     @Transactional
-    public UserResponse registerFromDto(SignupRequest dto, String roleName) throws Auth0Exception {
-        Role role = roleService.getRoleByNameOrThrow(roleName, true);
+    public UserResponse registerFromDto(SignupRequest dto) throws Auth0Exception {
+
+        Role role = new Role();
+        String roleName = dto.getRoleName();
+        try {
+            role = (roleName != null && !roleName.isEmpty())
+                    ? roleService.getRoleByNameOrThrow(roleName, true)
+                    : roleService.getRoleByNameOrThrow(USER_ROLE_NAME, true);
+        } catch (ResourceNotFoundException ex) {
+            log.warn("Rol '{}' no encontrado. Asignando rol por defecto '{}'", roleName, USER_ROLE_NAME);
+        }
 
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new ExistingResourceException("El email proporcionado ya está registrado en la base de datos");
@@ -72,8 +78,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse registerFromJwt(String auth0Id, String email, String name, String roleName) throws Auth0Exception {
-        Role role = roleService.getRoleByNameOrThrow(roleName, true);
+    public UserResponse registerFromJwt(String auth0Id, String email, String name) throws Auth0Exception {
+        Role role = roleService.getRoleByNameOrThrow(USER_ROLE_NAME, true);
 
         if (userRepository.existsByEmail(email)) {
             throw new ExistingResourceException("El email proporcionado ya está registrado en la base de datos");
@@ -118,7 +124,7 @@ public class UserService {
                     }
 
                     RoleResponse userRole = auth0UserService.getUserRole(auth0Id);
-                    String roleName = (userRole != null) ? userRole.getName() : USER_ROL_NAME;
+                    String roleName = (userRole != null) ? userRole.getName() : USER_ROLE_NAME;
 
                     Role role = roleService.getRoleByNameOrThrow(roleName, true);
 
@@ -175,7 +181,7 @@ public class UserService {
         User user = getUserByIdOrThrow(id, false);
 
         if (user.getActive()) {
-            log.debug("Usuario con id '{}' ({}) ya está activo, no es necesario realizar otra acción", id, user.getEmail());
+            log.info("Usuario con id '{}' ({}) ya está activo, no es necesario realizar otra acción", id, user.getEmail());
             return userMapper.toResponse(user);
         }
 
@@ -190,7 +196,7 @@ public class UserService {
         User user = getUserByIdOrThrow(id, false);
 
         if (!user.getActive()) {
-            log.debug("Usuario con id '{}' ({}) ya está desactivado, no es necesario realizar otra acción", id, user.getEmail());
+            log.info("Usuario con id '{}' ({}) ya está desactivado, no es necesario realizar otra acción", id, user.getEmail());
             return userMapper.toResponse(user);
         }
 
@@ -200,8 +206,6 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    // NOTE: Recibe el auth0id en lugar del id de la base de datos ya que el método puede ser usado por el propio usuario
-    //  por ende se recibe el auth0id obtenido del jwt
     @Transactional
     public UserResponse update(String auth0Id, UserUpdateRequest dto) throws Auth0Exception {
         User user = getUserByAuth0IdOrThrow(auth0Id, true);
