@@ -55,7 +55,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurrent(auth0Id, email, name));
     }
 
-    @GetMapping("/admin/{id}")
+    @GetMapping("/admin/id/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
     }
