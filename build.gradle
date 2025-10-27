@@ -38,15 +38,23 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    /*Spring Retry y Spring Aspects*/
+    implementation("org.springframework.retry:spring-retry:2.0.12")
+    implementation("org.springframework:spring-aspects:6.2.10")
+
     /*Lombok*/
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
 
+    /*Mapstruct*/
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
     /*Security - Auth0*/
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-    implementation("com.auth0:auth0:1.45.0")
+    implementation("com.auth0:auth0:2.25.0")
 }
 
 tasks.named('test') {
