@@ -17,6 +17,8 @@ import com.example.auth0springbootstarter.service.auth0.Auth0UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -155,25 +157,23 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> findAll() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toResponse)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
     public UserResponse findById(Long id) {
         User user = getUserByIdOrThrow(id, false);
         return userMapper.toResponse(user);
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> findAllByRole(String roleName) {
+    public Page<UserResponse> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponse);
+    }
+
+    @Transactional
+    public Page<UserResponse> findAllByRole(Pageable pageable, String roleName) {
         Role role = roleService.getRoleByNameOrThrow(roleName, true);
 
-        return userRepository.findByRole(role).stream()
-                .map(userMapper::toResponse)
-                .toList();
+        return userRepository.findByRole(pageable, role)
+                .map(userMapper::toResponse);
     }
 
     @Transactional
