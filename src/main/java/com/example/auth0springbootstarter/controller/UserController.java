@@ -8,6 +8,9 @@ import com.example.auth0springbootstarter.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,13 +64,13 @@ public class UserController {
     }
 
     @GetMapping("/admin/users")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.findAllByRole(USER_ROLE_NAME));
+    public ResponseEntity<Page<UserResponse>> getAllUsers(@PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(userService.findAllByRole(pageable, USER_ROLE_NAME));
     }
 
     @GetMapping("/admin/admins")
-    public ResponseEntity<List<UserResponse>> getAllAdmins() {
-        return ResponseEntity.ok(userService.findAllByRole(ADMIN_ROLE_NAME));
+    public ResponseEntity<Page<UserResponse>> getAllAdmins(@PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(userService.findAllByRole(pageable, ADMIN_ROLE_NAME));
     }
 
     @PatchMapping
